@@ -1,0 +1,41 @@
+/* Estilos básicos de SolveIt */
+* { box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; margin: 0; background: #f3f5f9; color: #222; }
+
+/* Páginas de login y registro */
+body.centrado { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+.tarjeta { background: #fff; padding: 28px; border-radius: 10px; width: 100%; max-width: 380px;
+           box-shadow: 0 2px 12px rgba(0,0,0,.1); }
+.tarjeta h1 { margin-top: 0; }
+form label { display: block; margin-bottom: 14px; font-size: .95rem; }
+form input { display: block; width: 100%; padding: 9px; margin-top: 4px; font-size: 1rem;
+             border: 1px solid #bbb; border-radius: 6px; }
+button { font-size: 1rem; padding: 10px 18px; border: 0; border-radius: 6px;
+         background: #3558d6; color: #fff; cursor: pointer; }
+button:hover { background: #2a47b3; }
+.error { background: #fde8e8; color: #a11; padding: 9px 12px; border-radius: 6px; }
+
+/* Páginas con sesión */
+.barra { display: flex; justify-content: space-between; align-items: center;
+         background: #3558d6; color: #fff; padding: 12px 20px; }
+.barra a { color: #fff; }
+.contenido { max-width: 900px; margin: 20px auto; padding: 0 12px; }
+
+/* Pizarrón */
+.herramientas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+button.herr { background: #fff; color: #222; border: 2px solid #c5cbe0; }
+button.herr:hover { background: #eef1fb; }
+button.herr.activo { border-color: #3558d6; background: #e3e9ff; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Líneas guía dibujadas con CSS en el contenedor (no salen en el PNG enviado a la IA) */
+.marco-pizarron { position: relative; border: 2px solid #333; border-radius: 6px; background: #fff;
+  max-width: 800px; }
+/* Capa de líneas guía por ENCIMA del canvas; no recibe clics, así que se puede dibujar a través */
+.marco-pizarron::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 69px, #dde3f3 69px, #dde3f3 70px); }
+#lienzo { display: block; width: 100%; height: auto; cursor: crosshair;
+  touch-action: none; /* necesario para dibujar con el dedo sin que la página se desplace */
+  user-select: none; }
+.acciones { display: flex; align-items: center; gap: 12px; }
+.vista { max-width: 100%; border: 1px dashed #888; background: #fff; }
