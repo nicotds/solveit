@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SolveIt — Prueba de escritura (Fase 0)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 840px; margin: 20px auto; padding: 0 10px; }
+  canvas { border: 2px solid #333; width: 100%; max-width: 800px; background: #fff;
+           touch-action: none; /* necesario para dibujar con el dedo */ cursor: crosshair; }
+  button { font-size: 1rem; padding: 8px 16px; margin-right: 6px; }
+  #aviso { color: #b00; min-height: 1.4em; }
+  pre { background: #f4f4f4; padding: 10px; white-space: pre-wrap; word-break: break-word; }
+</style>
+</head>
+<body>
+<h1>Prueba de escritura</h1>
+<p>Escribe una operación o ecuación grande y clara, y presiona <b>Leer</b>.</p>
+
+<canvas id="lienzo" width="800" height="350"></canvas>
+<p>
+  <button id="btnLeer">Leer</button>
+  <button id="btnLimpiar">Limpiar</button>
+</p>
+<div id="aviso"></div>
+<pre id="salida">(aquí aparecerá la respuesta cruda)</pre>
+
+<script>
+const lienzo = document.getElementById('lienzo');
+const ctx = lienzo.getContext('2d');
+const aviso = document.getElementById('aviso');
+const salida = document.getElementById('salida');
+let dibujando = false;
+let hayTrazo = false;
+
+// Fondo blanco SÓLIDO (el PNG no puede ser transparente)
+function limpiar() {
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  hayTrazo = false;
+}
+limpiar();
+
+// Coordenadas corregidas por el escalado CSS del canvas
+function posicion(e) {
+  const r = lienzo.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * (lienzo.width / r.width),
+    y: (e.clientY - r.top) * (lienzo.height / r.height)
+  };
+}
+
+lienzo.addEventListener('pointerdown', e => {
+  dibujando = true;
+  lienzo.setPointerCapture(e.pointerId);
+  const p = posicion(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  ctx.lineTo(p.x + 0.01, p.y); // permite dibujar puntos
+  ctx.stroke();
+  hayTrazo = true;
+});
+lienzo.addEventListener('pointermove', e => {
+  if (!dibujando) return;
+  const p = posicion(e);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+});
+['pointerup', 'pointercancel'].forEach(ev =>
+  lienzo.addEventListener(ev, () => { dibujando = false; }));
+
+document.getElementById('btnLimpiar').onclick = () => {
+  limpiar();
+  aviso.textContent = '';
+  salida.textContent = '(aquí aparecerá la respuesta cruda)';
+};
+
+document.getElementById('btnLeer').onclick = async () => {
+  if (!hayTrazo) {
+    aviso.textContent = 'Primero escribe algo en el pizarrón';
+    return;
+  }
+  aviso.textContent = '';
+  salida.textContent = 'Leyendo…';
+  try {
+    const resp = await fetch('prueba.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagen: lienzo.toDataURL('image/png') })
+    });
+    const datos = await resp.json();
+    salida.textContent = JSON.stringify(datos, null, 2);
+  } catch (err) {
+    salida.textContent = 'Error: ' + err.message;
+  }
+};
+</script>
+</body>
+</html>
