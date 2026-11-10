@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/iconos.php';
+
 // Barra superior común a las páginas con sesión. $actual: 'pizarron' | 'historial' | 'admin' | 'problema'
 function barra_superior($usuario, $actual)
 {
@@ -13,6 +15,8 @@ function barra_superior($usuario, $actual)
         echo $enlace('admin', 'admin.php', 'Admin');
     }
     echo '</nav>';
-    echo '<span class="usuario">' . e($usuario['nombre']) . ' · <a href="logout.php">Salir</a></span>';
+    $inicial = e(mb_substr(trim($usuario['nombre']), 0, 1));
+    echo '<span class="usuario"><span class="avatar" aria-hidden="true">' . $inicial . '</span>'
+       . '<span class="nombre">' . e($usuario['nombre']) . '</span> <a href="logout.php">Salir</a></span>';
     echo '</div></header>';
 }

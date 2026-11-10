@@ -30,7 +30,7 @@ $datosJson = $solucion ? json_encode($solucion, JSON_UNESCAPED_UNICODE | JSON_HE
   <?php barra_superior($usuario, 'problema'); ?>
 
   <main class="contenido">
-    <p><a href="historial.php">← Volver al historial</a></p>
+    <a class="volver" href="historial.php"><?= icono('volver') ?> Volver al historial</a>
 
     <?php if (!$fila): ?>
       <div class="panel vacio">No encontramos ese problema. Puede que ya lo hayas borrado.</div>

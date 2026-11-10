@@ -25,8 +25,8 @@ $q->execute();
 $problemas = $q->get_result()->fetch_all(MYSQLI_ASSOC);
 
 $etiquetas = [
-    'verificado'    => ['✓ Verificado', 'bueno'],
-    'inconsistente' => ['⚠ No coincidió', 'malo'],
+    'verificado'    => ['Verificado', 'bueno'],
+    'inconsistente' => ['No coincidió', 'malo'],
     'no_verificado' => ['Sin verificar', 'medio'],
 ];
 ?>

@@ -55,7 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="centrado">
   <main class="tarjeta">
+    <div class="marca">SolveIt</div>
     <h1>Crear cuenta</h1>
+    <p class="subtitulo">Guarda tu historial y practica con ejercicios nuevos.</p>
     <?php if ($error): ?><p class="error"><?= e($error) ?></p><?php endif; ?>
     <form method="post">
       <label>Nombre <input type="text" name="nombre" value="<?= e($nombre) ?>" required maxlength="80"></label>

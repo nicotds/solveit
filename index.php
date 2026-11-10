@@ -36,10 +36,10 @@ $demo = ($_GET['demo'] ?? '') === '1';
       <h2>1. Escribe tu operación o ecuación</h2>
 
       <div class="herramientas">
-        <button id="btnLapiz" class="herr">✏️ Lápiz</button>
-        <button id="btnBorrador" class="herr">🧽 Borrador</button>
-        <button id="btnDeshacer" class="herr">↩️ Deshacer</button>
-        <button id="btnLimpiar" class="herr">🗑️ Limpiar</button>
+        <button id="btnLapiz" class="herr"><?= icono('lapiz') ?> Lápiz</button>
+        <button id="btnBorrador" class="herr"><?= icono('borrador') ?> Borrador</button>
+        <button id="btnDeshacer" class="herr"><?= icono('deshacer') ?> Deshacer</button>
+        <button id="btnLimpiar" class="herr"><?= icono('limpiar') ?> Limpiar</button>
       </div>
 
       <!-- Las líneas guía van en el CSS de este contenedor, NO dentro del canvas -->
@@ -49,12 +49,12 @@ $demo = ($_GET['demo'] ?? '') === '1';
 
       <p class="acciones">
         <button id="btnLeer">Leer</button>
-        <button id="btnTeclado" class="herr">⌨️ Escribirla con el teclado</button>
+        <button id="btnTeclado" class="herr"><?= icono('teclado') ?> Escribirla con el teclado</button>
         <a href="index.php?demo=1" class="enlace-chico">Modo demo</a>
       </p>
     <?php endif; ?>
     <?php if ($demo): ?>
-      <p><button id="btnTeclado" class="herr">⌨️ Escribir otra con el teclado</button></p>
+      <p><button id="btnTeclado" class="herr"><?= icono('teclado') ?> Escribir otra con el teclado</button></p>
     <?php endif; ?>
     <p id="avisoLectura" class="error" hidden></p>
 
@@ -62,7 +62,7 @@ $demo = ($_GET['demo'] ?? '') === '1';
     <section id="panelConfirmar" class="panel" hidden>
       <h2>2. Revisa<?= $demo ? '' : ' lo que se leyó' ?></h2>
       <div id="cajaDudas" class="dudas" hidden>
-        <strong>⚠️ Revisa estos puntos:</strong>
+        <strong>Revisa estos puntos:</strong>
         <ul id="listaDudas"></ul>
       </div>
       <label for="campoExpresion">Si algo está mal, corrígelo aquí:</label>

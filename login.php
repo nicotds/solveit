@@ -35,7 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="centrado">
   <main class="tarjeta">
+    <div class="marca">SolveIt</div>
     <h1>Iniciar sesión</h1>
+    <p class="subtitulo">Entra para resolver y practicar tus ecuaciones.</p>
     <?php if ($error): ?><p class="error"><?= e($error) ?></p><?php endif; ?>
     <form method="post">
       <label>Correo <input type="email" name="email" value="<?= e($email) ?>" required></label>

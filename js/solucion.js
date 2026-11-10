@@ -75,7 +75,7 @@ function mostrarSolucionEn(d) {
   // ----- Sello de verificación -----
   if (d.verificacion === 'verificado') {
     selloEl.className = 'sello bueno';
-    selloEl.appendChild(crear('strong', '', '✓ Verificado con PHP: '));
+    selloEl.appendChild(crear('strong', '', 'Verificado con PHP: '));
     d.comprobaciones.forEach((c, i) => {
       const s = crear('span', 'comprobacion');
       renderKatex(s, aLatex(c), false);
@@ -84,13 +84,13 @@ function mostrarSolucionEn(d) {
     });
   } else if (d.verificacion === 'inconsistente') {
     selloEl.className = 'sello malo';
-    selloEl.appendChild(crear('strong', '', '⚠️ La IA y la verificación de PHP NO coinciden. '));
+    selloEl.appendChild(crear('strong', '', 'La IA y la verificación de PHP NO coinciden. '));
     selloEl.appendChild(document.createTextNode(
       'La respuesta de la IA no se da por correcta. El valor calculado por PHP aparece abajo.'));
     if (d.resultado_ia) selloEl.appendChild(crear('div', 'detalle', 'La IA dijo: ' + d.resultado_ia));
   } else {
     selloEl.className = 'sello medio';
-    selloEl.appendChild(crear('strong', '', '⚠️ Sin verificar. '));
+    selloEl.appendChild(crear('strong', '', 'Sin verificar. '));
     selloEl.appendChild(document.createTextNode(
       'Este tipo de problema no se puede comprobar con PHP; revisa el resultado por tu cuenta.'));
   }

@@ -15,7 +15,7 @@ $permitirPractica = $permitirPractica ?? true;
       <p id="resumenFinal" class="resumen-final"></p>
       <p id="estadoGuardado" class="ayuda"></p>
       <?php if ($permitirPractica): ?>
-        <button id="btnSimilar" class="herr">🎲 Dame un ejercicio parecido</button>
+        <button id="btnSimilar" class="herr">Dame un ejercicio parecido</button>
         <p id="avisoPractica" class="error" hidden></p>
       <?php endif; ?>
     </section>
