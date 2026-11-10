@@ -1,41 +1,137 @@
-/* Estilos básicos de SolveIt */
+/* SolveIt — estilos */
+:root {
+  --azul: #3558d6; --azul-osc: #2a47b3; --azul-claro: #eef1fb; --borde: #c5cbe0;
+  --verde: #137333; --verde-fondo: #e3f6e8; --rojo: #a11; --rojo-fondo: #fde8e8;
+  --ambar: #6b4e00; --ambar-fondo: #fff6e0; --texto: #222; --fondo: #f3f5f9;
+}
 * { box-sizing: border-box; }
-body { font-family: system-ui, sans-serif; margin: 0; background: #f3f5f9; color: #222; }
+body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; background: var(--fondo); color: var(--texto); line-height: 1.45; }
+a { color: var(--azul); }
+h2 { margin: 18px 0 10px; }
 
-/* Páginas de login y registro */
-body.centrado { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
-.tarjeta { background: #fff; padding: 28px; border-radius: 10px; width: 100%; max-width: 380px;
-           box-shadow: 0 2px 12px rgba(0,0,0,.1); }
-.tarjeta h1 { margin-top: 0; }
-form label { display: block; margin-bottom: 14px; font-size: .95rem; }
-form input { display: block; width: 100%; padding: 9px; margin-top: 4px; font-size: 1rem;
-             border: 1px solid #bbb; border-radius: 6px; }
-button { font-size: 1rem; padding: 10px 18px; border: 0; border-radius: 6px;
-         background: #3558d6; color: #fff; cursor: pointer; }
-button:hover { background: #2a47b3; }
-.error { background: #fde8e8; color: #a11; padding: 9px 12px; border-radius: 6px; }
-
-/* Páginas con sesión */
-.barra { display: flex; justify-content: space-between; align-items: center;
-         background: #3558d6; color: #fff; padding: 12px 20px; }
-.barra a { color: #fff; }
-.contenido { max-width: 900px; margin: 20px auto; padding: 0 12px; }
-
-/* Pizarrón */
-.herramientas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-button.herr { background: #fff; color: #222; border: 2px solid #c5cbe0; }
-button.herr:hover { background: #eef1fb; }
-button.herr.activo { border-color: #3558d6; background: #e3e9ff; }
+/* ---------- Botones y formularios ---------- */
+button, .enlace-boton { font-size: 1rem; padding: 10px 18px; border: 0; border-radius: 8px; background: var(--azul);
+  color: #fff; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-block; }
+button:hover, .enlace-boton:hover { background: var(--azul-osc); }
 button:disabled { opacity: .45; cursor: not-allowed; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #9db4ff; outline-offset: 2px; }
+button.herr, .enlace-boton.herr { background: #fff; color: var(--texto); border: 2px solid var(--borde); }
+button.herr:hover { background: var(--azul-claro); }
+button.herr.activo { border-color: var(--azul); background: #e3e9ff; }
+button.peligro { color: #a11; border-color: #e3b0b0; }
+button.peligro:hover { background: var(--rojo-fondo); }
+.enlace-chico { font-size: .9rem; margin-left: auto; }
+form label { display: block; margin-bottom: 14px; font-size: .95rem; }
+form input { display: block; width: 100%; padding: 9px; margin-top: 4px; font-size: 1rem; border: 1px solid #bbb; border-radius: 6px; }
+code { background: var(--azul-claro); padding: 1px 5px; border-radius: 4px; }
+.error { background: var(--rojo-fondo); color: var(--rojo); padding: 9px 12px; border-radius: 6px; }
+.exito { background: var(--verde-fondo); color: var(--verde); padding: 9px 12px; border-radius: 6px; }
+.ayuda { font-size: .88rem; color: #555; }
 
-/* Líneas guía dibujadas con CSS en el contenedor (no salen en el PNG enviado a la IA) */
-.marco-pizarron { position: relative; border: 2px solid #333; border-radius: 6px; background: #fff;
-  max-width: 800px; }
-/* Capa de líneas guía por ENCIMA del canvas; no recibe clics, así que se puede dibujar a través */
+/* ---------- Login y registro ---------- */
+body.centrado { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+.tarjeta { background: #fff; padding: 28px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 2px 12px rgba(0,0,0,.1); }
+.tarjeta h1 { margin-top: 0; }
+
+/* ---------- Barra superior ---------- */
+.barra { background: var(--azul); color: #fff; }
+.barra-in { max-width: 900px; margin: 0 auto; padding: 10px 14px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.barra a { color: #fff; text-decoration: none; }
+.barra .marca { font-weight: 700; font-size: 1.25rem; }
+.barra nav { display: flex; gap: 4px; }
+.barra nav a { padding: 6px 12px; border-radius: 6px; }
+.barra nav a:hover { background: rgba(255,255,255,.18); }
+.barra nav a.activo { background: rgba(255,255,255,.28); font-weight: 600; }
+.barra .usuario { margin-left: auto; font-size: .95rem; }
+.barra .usuario a { text-decoration: underline; }
+
+.contenido { max-width: 900px; margin: 12px auto 40px; padding: 0 14px; }
+
+/* ---------- Pizarrón ---------- */
+.herramientas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+/* Líneas guía dibujadas con CSS en una capa por encima del canvas (no salen en el PNG enviado a la IA) */
+.marco-pizarron { position: relative; border: 2px solid #333; border-radius: 8px; background: #fff; max-width: 800px; }
 .marco-pizarron::after { content: ''; position: absolute; inset: 0; pointer-events: none;
   background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 69px, #dde3f3 69px, #dde3f3 70px); }
 #lienzo { display: block; width: 100%; height: auto; cursor: crosshair;
-  touch-action: none; /* necesario para dibujar con el dedo sin que la página se desplace */
-  user-select: none; }
-.acciones { display: flex; align-items: center; gap: 12px; }
-.vista { max-width: 100%; border: 1px dashed #888; background: #fff; }
+  touch-action: none; /* necesario para dibujar con el dedo sin que la página se desplace */ user-select: none; }
+.acciones { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.vista { max-width: 100%; border: 1px dashed #888; background: #fff; border-radius: 6px; margin-top: 8px; }
+
+/* ---------- Modo demo ---------- */
+.aviso-demo { background: var(--ambar-fondo); border-left: 4px solid #e0a100; padding: 10px 14px; border-radius: 6px; margin-top: 12px; }
+.ejemplos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.ejemplos button { font-family: ui-monospace, Consolas, monospace; }
+
+/* ---------- Paneles ---------- */
+.panel { background: #fff; border-radius: 12px; padding: 16px 20px; margin-top: 18px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.panel h2 { margin-top: 0; }
+.panel label { display: block; margin-bottom: 6px; }
+.panel input[type=text] { width: 100%; padding: 10px; font-size: 1.2rem; font-family: ui-monospace, Consolas, monospace;
+  border: 2px solid #bbb; border-radius: 6px; }
+.panel.vacio { text-align: center; color: #555; }
+.vista-katex { min-height: 70px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+  background: #f7f8fc; border-radius: 8px; margin: 12px 0; padding: 6px; overflow-x: auto; }
+.dudas { background: var(--ambar-fondo); border-left: 4px solid #e0a100; padding: 8px 12px; margin-bottom: 12px; border-radius: 4px; }
+.dudas ul { margin: 4px 0 0; padding-left: 20px; }
+.fila-resolver { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.nivel label { margin: 0 6px 0 4px; display: inline; }
+.nivel input { display: inline; width: auto; }
+
+/* ---------- Solución ---------- */
+.sello { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
+.sello.bueno { background: var(--verde-fondo); border: 1px solid #7bc58f; color: #0d5c25; }
+.sello.malo  { background: var(--rojo-fondo); border: 1px solid #e08a8a; color: #8a1111; }
+.sello.medio { background: var(--ambar-fondo); border: 1px solid #e0b84a; color: var(--ambar); }
+.sello .detalle { margin-top: 6px; font-size: .92rem; }
+.comprobacion { display: inline-block; margin: 0 4px; }
+.resultado { text-align: center; background: var(--azul-claro); border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+.resultado .etiqueta { font-size: .85rem; color: #555; text-transform: uppercase; letter-spacing: .04em; }
+.resultado .valor { font-size: 1.9rem; margin-top: 4px; overflow-x: auto; }
+details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+.pasos { padding-left: 22px; }
+.pasos li { margin-bottom: 16px; }
+.pasos .formula { background: #f7f8fc; border-radius: 6px; margin: 6px 0; padding: 2px 8px; overflow-x: auto; }
+.pasos .explicacion { margin: 4px 0 0; color: #333; }
+.resumen-final { font-style: italic; }
+
+/* ---------- Práctica ---------- */
+.resultado-practica { padding: 10px 14px; border-radius: 8px; font-weight: 600; }
+.resultado-practica.bien { background: var(--verde-fondo); color: var(--verde); }
+.resultado-practica.mal  { background: var(--rojo-fondo); color: var(--rojo); }
+.resultado-practica.info { background: var(--azul-claro); color: #1f3a99; }
+#panelSolucion > .herr { margin-top: 6px; }
+
+/* ---------- Historial ---------- */
+.estadisticas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.estadisticas > div { background: #fff; border-radius: 10px; padding: 12px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+.estadisticas b { display: block; font-size: 1.6rem; color: var(--azul); }
+.estadisticas span { font-size: .85rem; color: #555; }
+.fila-historial { display: grid; grid-template-columns: 1fr auto auto; gap: 8px 16px; align-items: center; background: #fff;
+  border-radius: 10px; padding: 10px 16px; margin-bottom: 8px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+.fh-expr small, .fh-meta small { display: block; color: #555; }
+.fh-expr .expr { font-size: 1.15rem; overflow-x: auto; display: block; }
+.fh-acciones { display: flex; gap: 8px; align-items: center; }
+.fh-acciones form { margin: 0; }
+.fh-acciones .enlace-boton, .fh-acciones button { padding: 7px 14px; font-size: .92rem; }
+.insignia { display: inline-block; font-size: .8rem; font-weight: 600; padding: 3px 10px; border-radius: 99px; }
+.insignia.bueno { background: var(--verde-fondo); color: var(--verde); }
+.insignia.malo  { background: var(--rojo-fondo); color: var(--rojo); }
+.insignia.medio { background: var(--ambar-fondo); color: var(--ambar); }
+.acciones-pie { display: flex; gap: 10px; align-items: center; margin-top: 18px; }
+.acciones-pie form { margin: 0; }
+
+/* ---------- Tabla de administración ---------- */
+.tabla-scroll { overflow-x: auto; }
+.tabla { border-collapse: collapse; width: 100%; }
+.tabla th, .tabla td { border-bottom: 1px solid #e3e6f0; padding: 8px 10px; text-align: left; font-size: .93rem; }
+.tabla th { background: var(--azul-claro); }
+
+/* ---------- Celular ---------- */
+@media (max-width: 640px) {
+  .estadisticas { grid-template-columns: repeat(2, 1fr); }
+  .fila-historial { grid-template-columns: 1fr; }
+  .barra .usuario { margin-left: 0; width: 100%; }
+  .resultado .valor { font-size: 1.5rem; }
+  .vista-katex { font-size: 1.15rem; }
+}

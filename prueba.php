@@ -4,6 +4,14 @@
 header('Content-Type: application/json; charset=utf-8');
 require __DIR__ . '/php/config.php';
 
+// Solo con sesión iniciada: si no, cualquiera en la red podría gastar la cuota de Gemini
+require __DIR__ . '/php/auth.php';
+if (usuario_actual() === null) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'mensaje' => 'Inicia sesión en SolveIt para usar esta prueba.']);
+    exit;
+}
+
 function responder($datos) {
     echo json_encode($datos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;

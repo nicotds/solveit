@@ -89,35 +89,52 @@ Es un proyecto para una **materia de programación**. Es para presentación, no 
 
 ## 6. Estructura de archivos
 
+> **Estructura real construida** (incluye los archivos añadidos durante el desarrollo; ver sección 16).
+
 ```
 solveit/
-├── index.php                  # Pizarrón + confirmación + solución (requiere sesión)
+├── index.php                  # Pizarrón + confirmación + solución (requiere sesión). ?demo=1 = modo sin IA
 ├── login.php
 ├── registro.php
 ├── logout.php
-├── historial.php              # Lista de problemas del usuario
+├── historial.php              # Lista de problemas del usuario + estadísticas
 ├── problema.php               # Ver un problema guardado (?id=)
+├── admin.php                  # Panel de administrador (solo rol admin)
+├── prueba.html / prueba.php   # Prueba de la Fase 0 (prueba.php exige sesión)
 ├── css/
 │   └── estilos.css
 ├── js/
-│   ├── pizarron.js            # Canvas, deshacer, exportar PNG
-│   └── solver.js              # Flujo leer → confirmar → resolver, render con KaTeX
+│   ├── pizarron.js            # Canvas, deshacer, exportar PNG recortado
+│   ├── solucion.js            # Compartido: expresión → LaTeX, KaTeX, mostrar solución verificada
+│   ├── solver.js              # Flujo leer → confirmar → resolver (+ modo demo)
+│   └── practica.js            # "Dame un ejercicio parecido" y corrección
 ├── lib/
-│   └── katex/                 # katex.min.js, katex.min.css y carpeta fonts (local)
+│   └── katex/                 # katex.min.js, katex.min.css y carpeta fonts (local, v0.16.11)
 ├── php/
-│   ├── config.php             # API key de Gemini, modelo, datos de BD (NO subir a GitHub)
-│   ├── db.php                 # Conexión a MySQL
-│   ├── auth.php               # Sesiones (requerir_login, usuario_actual)
+│   ├── config.php             # API key, modelos, datos de BD (NO subir a GitHub)
+│   ├── db.php                 # Conexión a MySQL (mysqli)
+│   ├── auth.php               # Sesiones, requerir_login, e(), token CSRF
+│   ├── barra.php              # Barra de navegación común
+│   ├── gemini.php             # Llamadas a Gemini: reintentos, modelos de respaldo, límite de uso
+│   ├── imagen.php             # Valida y guarda/borra los PNG del pizarrón
 │   ├── leer.php               # Imagen → expresión (Gemini)
 │   ├── resolver.php           # Expresión → pasos (Gemini) + verificación + guardado
+│   ├── verificar.php          # Compara a la IA contra el cálculo propio de PHP
 │   ├── evaluador.php          # Evaluador matemático seguro (sin eval)
-│   ├── similar.php            # (Opcional) Genera un ejercicio parecido
-│   └── borrar.php             # Borra un problema propio
+│   ├── problemas.php          # Guardar / obtener / borrar problemas (consultas preparadas)
+│   ├── similar.php            # Genera un ejercicio parecido (PHP calcula la respuesta)
+│   ├── comprobar.php          # Corrige la respuesta del usuario en el modo práctica
+│   ├── borrar.php             # Borra un problema propio (POST + CSRF)
+│   ├── demo_datos.php         # 6 ejemplos resueltos para el modo demo (Plan B)
+│   └── parcial_solucion.php   # Fragmento HTML: panel de solución y de práctica
 ├── tests/
-│   └── probar_evaluador.php   # Casos de prueba del evaluador (se ejecuta en el navegador)
+│   ├── probar_evaluador.php   # 68 casos del evaluador (navegador o terminal)
+│   └── probar_verificacion.php# 23 casos de verificación con respuestas de IA inventadas
 ├── sql/
-│   └── solveit.sql            # Script para importar en phpMyAdmin
+│   ├── solveit.sql            # Script para importar en phpMyAdmin
+│   └── cargar_demo.php        # Crea la cuenta demo con los ejemplos (solo desde localhost)
 ├── uploads/
+│   ├── .htaccess              # Impide ejecutar PHP y listar la carpeta
 │   └── pizarrones/            # PNG de lo escrito, con nombre aleatorio
 └── .gitignore                 # Incluye php/config.php y uploads/
 ```
@@ -336,17 +353,17 @@ Anota cuáles lee bien y cuáles no. **Nota:** si la tasa de acierto es baja, la
 
 ## 13. Criterios de aceptación
 
-- [ ] Una operación o ecuación lineal escrita con claridad se lee, se confirma, se resuelve y se verifica.
-- [ ] Un garabato, un lienzo vacío o un dibujo que no es matemática muestran un error y **no** se resuelven ni se guardan.
-- [ ] El usuario puede **corregir la lectura** antes de resolver.
-- [ ] El resultado muestra los pasos con fórmulas bien renderizadas y un estado de verificación.
-- [ ] Si la IA y PHP no coinciden, la respuesta **no** se presenta como correcta.
-- [ ] El evaluador pasa todos los casos de prueba y rechaza entradas peligrosas (`system("ls")`, etc.).
-- [ ] Registro, login y logout funcionan; las páginas protegidas exigen sesión.
-- [ ] El historial guarda, lista, abre y borra, y cada usuario solo ve lo suyo.
-- [ ] La clave de Gemini no aparece en ningún archivo que llegue al navegador.
-- [ ] Los errores de red, de cuota (429) y de clave inválida muestran mensajes comprensibles.
-- [ ] Funciona en Chrome o Edge, con mouse y con pantalla táctil.
+- [x] Una operación o ecuación lineal escrita con claridad se lee, se confirma, se resuelve y se verifica.
+- [x] Un garabato, un lienzo vacío o un dibujo que no es matemática muestran un error y **no** se resuelven ni se guardan.
+- [x] El usuario puede **corregir la lectura** antes de resolver.
+- [x] El resultado muestra los pasos con fórmulas bien renderizadas y un estado de verificación.
+- [x] Si la IA y PHP no coinciden, la respuesta **no** se presenta como correcta.
+- [x] El evaluador pasa todos los casos de prueba (68 de 68) y rechaza entradas peligrosas (`system("ls")`, etc.).
+- [x] Registro, login y logout funcionan; las páginas protegidas exigen sesión.
+- [x] El historial guarda, lista, abre y borra, y cada usuario solo ve lo suyo (probado con dos usuarios).
+- [x] La clave de Gemini no aparece en ningún archivo que llegue al navegador.
+- [x] Los errores de red, de cuota (429) y de clave inválida muestran mensajes comprensibles.
+- [ ] Funciona en Chrome o Edge, con mouse y con pantalla táctil. *(pendiente de probar a mano; ver guía en la sección 17)*
 
 ## 14. Problemas comunes (XAMPP / Windows)
 
@@ -362,6 +379,86 @@ Anota cuáles lee bien y cuáles no. **Nota:** si la tasa de acierto es baja, la
 - Estadísticas personales: cuántos problemas, porcentaje verificado, tipos más frecuentes.
 - Exportar la solución como imagen o PDF.
 - Panel de administrador con usuarios y métricas.
+
+---
+
+## 16. Estado final y diferencias respecto al plan
+
+Todas las fases (0 a 8) y el Plan B están construidos. Resultado de la Fase 0: **10 de 10** ecuaciones leídas bien. Lo que cambió o se añadió respecto al plan original:
+
+| Tema | Plan original | Lo que se hizo y por qué |
+|---|---|---|
+| **Puerto de MySQL** | `localhost`, puerto por defecto | El equipo tiene un servicio MySQL 9.3 de Windows en el 3306; el MySQL de XAMPP usa el **3307**. `config.php` usa `127.0.0.1` y `DB_PORT = 3307`. En otro equipo, revisar el puerto. |
+| **Modelo de Gemini** | `gemini-2.5-flash` (marcador) | Principal: `gemini-3.5-flash`. El modelo `gemini-2.5-flash` ya devuelve **404** (retirado para cuentas nuevas). |
+| **Cuota gratuita** | Solo "manejar el 429" | El nivel gratuito permite ~**20 peticiones por día por modelo**; se agotó durante las pruebas. Por eso `gemini.php` encadena modelos de respaldo (`gemini-3-flash-preview`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`), cada uno con su propia cuota. Ante 429/404 pasa al siguiente de inmediato; ante 503 reintenta una vez. |
+| **Error 503 "high demand"** | No previsto | Manejado con el reintento y los respaldos anteriores, más un mensaje amable si todo falla. |
+| **Imagen en el historial** | `resolver.php` recibe solo texto | El navegador reenvía el PNG a `resolver.php` solo para **guardarlo**; Gemini sigue recibiendo solo texto en esa llamada. Si se escribió con el teclado, no hay imagen. |
+| **Verificación** | PHP muestra un sello | El **resultado destacado sale del cálculo de PHP**, no del texto de la IA. Si no coinciden, los pasos de la IA quedan ocultos y marcados "no confiables". Tolerancia IA↔PHP: 1e-6 (relativa); dentro del evaluador: 1e-9. |
+| **Seguridad extra** | Lista de seguridad mínima (sección 10) | Se añadió: token **CSRF** al borrar, `.htaccess` en `uploads/`, validación de PNG real con `getimagesizefromstring`, y `prueba.php` ahora exige sesión (antes era un acceso abierto a Gemini). |
+| **Modo demo (Plan B)** | `?demo=1` | `index.php?demo=1` ofrece 6 ejemplos guardados que se resuelven **sin llamar a Gemini**; PHP los verifica igual. `sql/cargar_demo.php` crea la cuenta `demo@solveit.local` / `demo1234` con esos problemas en su historial. |
+| **Ejercicio parecido** | Opcional | Hecho. Gemini propone el ejercicio, pero **PHP calcula la respuesta correcta** y la guarda en la sesión; el navegador no la recibe hasta pedir "Ver la respuesta". Acepta fracciones (`1/3`) y varias soluciones (`2, 3`). |
+| **Extras opcionales** | Estadísticas y panel admin | Hechos: estadísticas en el historial y `admin.php` (solo rol `admin`). |
+
+**Pendiente / limitaciones conocidas**
+- Probar en Chrome/Edge con pantalla táctil real (único criterio sin marcar).
+- Los modelos "lite" de respaldo son menos potentes; no se midió su acierto leyendo letra a mano.
+- Los nombres de modelos cambian con frecuencia: si alguno da 404, quitarlo de `GEMINI_MODELOS_RESPALDO`.
+- Antes de publicar fuera de localhost: borrar `tests/` y `sql/cargar_demo.php`, y cambiar la contraseña de la cuenta demo.
+
+## 17. Guía de pruebas (para revisar antes de exponer)
+
+**Preparación:** XAMPP con Apache y MySQL encendidos, base `solveit` importada, y `http://localhost/solveit/`. Usa Ctrl+F5 para recargar sin caché.
+
+### A. Pruebas automáticas (no gastan cuota de IA)
+1. `http://localhost/solveit/tests/probar_evaluador.php` → debe decir **68 de 68** ✓.
+2. `http://localhost/solveit/tests/probar_verificacion.php` → debe decir **23 de 23** ✓. Aquí se ve el caso "IA equivocada → inconsistente".
+
+### B. Cuentas y sesión
+3. Abre `http://localhost/solveit/` sin sesión → te manda a `login.php`.
+4. Regístrate. Prueba errores: correo repetido, contraseñas distintas, contraseña de menos de 6 caracteres.
+5. Cierra sesión; escribe `index.php` en la barra → vuelve al login.
+6. En phpMyAdmin, tabla `usuarios`: la contraseña debe verse como un hash (`$2y$…`).
+
+### C. Pizarrón (usa mouse y, si puedes, dedo o lápiz)
+7. Escribe con el trazo; prueba **Lápiz, Borrador, Deshacer** (varias veces, también Ctrl+Z) y **Limpiar** (y deshacer después de limpiar).
+8. En pantalla táctil la página **no** debe moverse mientras dibujas.
+9. Achica la ventana: el trazo debe seguir exactamente al puntero.
+10. Con el lienzo vacío pulsa **Leer** → "Primero escribe algo en el pizarrón".
+
+### D. Flujo completo con IA (gasta 2 peticiones por intento)
+11. Escribe `2x+3=11` → **Leer** → aparece `2*x+3=11` con la fórmula dibujada → **Resolver**. Debe salir el sello verde "✓ Verificado" con `2(4)+3=11`, el resultado `x = 4` y los pasos.
+12. Cambia a **Avanzada** y resuelve otra vez; la explicación debe ser más técnica.
+13. **Corregir a mano:** tras leer, cambia el 11 por 12 en el campo; la vista previa cambia y el resultado también.
+14. **Garabato:** dibuja una casa o líneas sueltas → **Leer** → mensaje de error, sin panel de resolución.
+15. Prueba las 10 de la Fase 0: `2+3` · `15-7` · `4×6` · `20÷5` · `2x+3=11` · `3x-5=10` · `x/2=7` · `(2+3)×4` · `2^3` · `x²-5x+6=0`.
+16. Pulsa **Leer** dos veces muy rápido → la segunda pide esperar unos segundos (límite de 1 cada 4 s).
+17. **Teclado:** botón "Escribirla con el teclado"; prueba `abc` o `system("ls")` → error y **Resolver** deshabilitado. Prueba `1/0` → "No se puede resolver: División entre cero" (sin gastar IA).
+
+### E. Historial
+18. Tras resolver aparece "✓ Guardado en tu historial". Entra a **Historial**: debe verse el problema con su insignia y las estadísticas.
+19. **Abrir** → muestra la solución y, si lo escribiste a mano, "Ver lo que escribiste en el pizarrón".
+20. **Borrar** → pide confirmación y desaparece (y su imagen sale de `uploads/pizarrones/`).
+21. **Aislamiento:** crea un segundo usuario; su historial debe estar vacío y `problema.php?id=` con un id del primero debe dar "No encontramos ese problema".
+
+### F. Ejercicio parecido
+22. En una solución pulsa **🎲 Dame un ejercicio parecido** → aparece un ejercicio nuevo.
+23. Responde mal → "Todavía no"; responde bien → "¡Correcto! 🎉". En ecuaciones con dos soluciones prueba `2, 3`, `x1=2; x2=3` y `3 y 2`.
+24. **Ver la respuesta** muestra la correcta; **Otro ejercicio** pide uno nuevo.
+
+### G. Plan B (modo demo)
+25. Visita `http://localhost/solveit/index.php?demo=1` → elige un ejemplo → **Resolver** → solución verificada **sin internet** (puedes probarlo apagando el wifi).
+26. Cuenta demo: ejecuta una vez `http://localhost/solveit/sql/cargar_demo.php` e inicia sesión con `demo@solveit.local` / `demo1234`; su historial trae 6 problemas listos para mostrar.
+
+### H. Errores y administración
+27. Para ver el error de cuota o de clave: pon una API key falsa en `config.php` y pulsa **Leer** → mensaje "Gemini rechazó la petición… Revisa la API key". Restaura la clave después.
+28. `admin.php` como usuario normal → "Solo para administradores". Para probarlo: en phpMyAdmin cambia tu `rol` a `admin`.
+
+### I. Seguridad rápida
+29. Abre `http://localhost/solveit/uploads/pizarrones/` → debe dar 403 (sin listar archivos).
+30. Mira el código fuente de la página (Ctrl+U): **no** debe aparecer la API key en ningún lado.
+
+### Guion sugerido para la presentación (según la sección 12)
+1) Un caso que funciona (`2x+3=11`, mostrando el sello). 2) Una lectura corregida a mano en la confirmación. 3) Un garabato que da error. 4) La verificación de PHP: abre `tests/probar_verificacion.php` y muestra una IA equivocada marcada como inconsistente. Si falla internet o se acaba la cuota: modo demo.
 
 ---
 

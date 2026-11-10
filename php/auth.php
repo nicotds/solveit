@@ -34,6 +34,19 @@ function iniciar_sesion_usuario($id, $nombre, $rol) {
     $_SESSION['usuario_rol']    = $rol;
 }
 
+// Protección CSRF para acciones que cambian datos (borrar): el formulario lleva un token
+// secreto de la sesión; una página ajena no puede conocerlo.
+function token_csrf() {
+    if (empty($_SESSION['csrf'])) {
+        $_SESSION['csrf'] = bin2hex(random_bytes(16));
+    }
+    return $_SESSION['csrf'];
+}
+
+function verificar_csrf($token) {
+    return is_string($token) && !empty($_SESSION['csrf']) && hash_equals($_SESSION['csrf'], $token);
+}
+
 // Atajo para imprimir texto de forma segura en HTML.
 function e($texto) {
     return htmlspecialchars((string)$texto, ENT_QUOTES, 'UTF-8');
