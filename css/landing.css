@@ -1,0 +1,960 @@
+/* =====================================================================
+   SolveIt — Landing page (css/landing.css)
+   ---------------------------------------------------------------------
+   Estilos SOLO de inicio.php. Todas las clases llevan el prefijo .lp-
+   para no chocar con css/estilos.css (el de la aplicación).
+
+   Índice
+     1. Fuentes locales (funcionan sin internet)
+     2. Variables: colores, tipografías, tiempos
+     3. Base
+     4. Botones, insignias y texto con brillo
+     5. Barra de navegación (píldora de vidrio) y menú móvil
+     6. Escena: fondo del héroe + esfera (fijos con sticky)
+     7. Héroe
+     8. "Así funciona" y maqueta de navegador
+     9. Cómo funciona, características, cierre y pie
+    10. Revelado al hacer scroll
+    11. Responsive
+    12. Movimiento reducido
+
+   Algunos efectos son adaptaciones en CSS puro de componentes de
+   Motion-Primitives (MIT © 2024 ibelick): TextShimmer, BorderTrail,
+   InfiniteSlider y ProgressiveBlur. Ver créditos en js/landing.js.
+   ===================================================================== */
+
+/* ---------- 1. Fuentes locales ---------- */
+/* Newsreader es variable: un solo archivo trae todos los pesos y ajusta su
+   diseño al tamaño (optical size), más fino y elegante en los titulares grandes. */
+@font-face {
+  font-family: "Newsreader";
+  src: url("../fonts/newsreader-variable.woff2") format("woff2");
+  font-weight: 200 800; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/inter-variable.woff2") format("woff2");
+  font-weight: 300 700; font-style: normal; font-display: swap;
+}
+/* Las fuentes de KaTeX ya están en lib/: las fórmulas se ven igual que en la app,
+   sin cargar el JavaScript de KaTeX. */
+@font-face {
+  font-family: "LP KaTeX Main";
+  src: url("../lib/katex/fonts/KaTeX_Main-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "LP KaTeX Math";
+  src: url("../lib/katex/fonts/KaTeX_Math-Italic.woff2") format("woff2");
+  font-style: italic; font-display: swap;
+}
+
+/* ---------- 2. Variables ---------- */
+:root {
+  /* Fondo: gris carbón con un toque violeta (medido del video de referencia) */
+  --lp-bg: #221e27;
+  --lp-surface: rgba(255, 255, 255, .06);      /* tarjetas y píldoras de vidrio */
+  --lp-border: rgba(255, 255, 255, .12);       /* bordes de 1 px */
+  --lp-border-suave: rgba(255, 255, 255, .08);
+  --lp-vidrio: rgba(24, 20, 32, .5);           /* píldoras de la barra */
+  --lp-vidrio-fuerte: rgba(20, 17, 27, .82);   /* ...cuando ya se hizo scroll */
+
+  /* Violetas */
+  --lp-violet-500: #7c5cff;   /* violeta principal */
+  --lp-violet-400: #9b82ff;   /* resplandor y degradados */
+  --lp-violet-300: #b9a8ff;   /* esfera, acentos */
+  --lp-lavender: #ece8ff;     /* botón claro, texto principal */
+
+  /* Texto y estados */
+  --lp-texto: #f6f4ff;
+  --lp-text-dim: rgba(236, 232, 255, .72);     /* subtítulos */
+  --lp-texto-tenue: rgba(236, 232, 255, .52);
+  --lp-ok: #4ade80;                            /* sello "verificado" */
+  --lp-aviso: #fbbf24;
+
+  /* Tipografías (con respaldo por si no cargan) */
+  --lp-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --lp-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --lp-math: "LP KaTeX Main", "Cambria Math", "Times New Roman", serif;
+  --lp-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  /* Movimiento: 300–700 ms con la misma curva suave */
+  --lp-curva: cubic-bezier(.22, 1, .36, 1);
+  --lp-rotacion: 4.6s;   /* cada cuánto cambian solas las pestañas de la maqueta */
+
+  /* Forma */
+  --lp-radio: 16px;
+  --lp-radio-g: 20px;
+  --lp-ancho: 1160px;
+
+  /* Alto de la pantalla para la escena (lvh = alto "grande" en celulares) */
+  --lp-alto: 100vh;
+}
+@supports (height: 100lvh) {
+  :root { --lp-alto: 100lvh; }
+}
+
+/* ---------- 3. Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 84px; }
+body.lp {
+  margin: 0; min-height: 100vh;
+  background: var(--lp-bg); color: var(--lp-texto);
+  font-family: var(--lp-sans); font-size: 16px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+/* :where() deja estas reglas con especificidad 0, así cualquier clase .lp-… las puede cambiar */
+:where(.lp) :where(p, h1, h2, h3) { margin: 0; }
+:where(.lp) a { color: inherit; }
+.lp ::selection { background: rgba(155, 130, 255, .45); color: #fff; }
+/* Foco visible en todo lo que se puede usar con teclado */
+.lp a:focus-visible, .lp button:focus-visible, .lp [tabindex]:focus-visible {
+  outline: 2px solid var(--lp-violet-300); outline-offset: 3px;
+}
+.lp .icono { flex: none; width: 1em; height: 1em; }
+.lp code {
+  font-family: var(--lp-mono); font-size: .88em; padding: 1px 5px; border-radius: 5px;
+  background: rgba(255, 255, 255, .08); color: #efeaff;
+}
+/* Solo para lectores de pantalla */
+.lp-sr {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.lp-saltar {
+  position: fixed; left: 16px; top: -80px; z-index: 100; padding: 10px 16px; border-radius: 10px;
+  background: var(--lp-lavender); color: #17131f; font-weight: 600; text-decoration: none;
+}
+.lp-saltar:focus { top: 16px; }
+.lp-contenedor { width: min(var(--lp-ancho), calc(100% - 40px)); margin-inline: auto; }
+
+/* Fórmulas con las fuentes de KaTeX (variables en cursiva, como en la app) */
+.lp-formula { font-family: var(--lp-math); font-style: normal; white-space: nowrap; }
+.lp-formula i { font-family: "LP KaTeX Math", var(--lp-math); font-style: italic; }
+.lp-formula sup { font-size: .68em; line-height: 0; vertical-align: .5em; }
+.lp-frac {
+  display: inline-flex; flex-direction: column; vertical-align: middle;
+  margin: 0 .12em; font-size: .78em; line-height: 1.12; text-align: center;
+}
+.lp-frac > span:first-child { padding: 0 .2em; border-bottom: 1px solid currentColor; }
+
+/* ---------- 4. Botones, insignias y brillo ---------- */
+.lp-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 38px; padding: 9px 16px; border: 1px solid transparent; border-radius: 9px;
+  font: 500 .875rem/1.2 var(--lp-sans); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background-color .3s var(--lp-curva), color .3s, border-color .3s, box-shadow .3s,
+              transform .45s cubic-bezier(.34, 1.56, .64, 1);
+}
+.lp-btn--fantasma { color: #fff; background: transparent; }
+.lp-btn--fantasma:hover { background: rgba(255, 255, 255, .08); }
+.lp-btn--claro {
+  color: #17131f; background: var(--lp-lavender);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 8px 24px -10px rgba(185, 168, 255, .7);
+}
+.lp-btn--claro:hover { background: #fff; }
+.lp-btn--vidrio { color: #fff; background: rgba(255, 255, 255, .07); border-color: var(--lp-border); }
+.lp-btn--vidrio:hover { background: rgba(255, 255, 255, .12); }
+.lp-btn--grande { min-height: 48px; padding: 13px 22px; border-radius: 12px; font-size: .95rem; }
+
+/* Insignia: rectángulo redondeado oscuro y translúcido */
+.lp-insignia {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 8px;
+  font-size: .8125rem; font-weight: 500; line-height: 1.3; color: var(--lp-texto);
+  background: rgba(24, 19, 34, .55); border: 1px solid rgba(255, 255, 255, .1);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.lp-insignia-tenue { color: var(--lp-texto-tenue); }
+.lp-insignia--clara { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .2); }
+.lp-punto {
+  flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--lp-ok);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, .16), 0 0 10px rgba(74, 222, 128, .7);
+}
+.lp-punto--claro { background: #fff; box-shadow: 0 0 8px rgba(255, 255, 255, .8); }
+
+/* Texto con un brillo que lo recorre (adaptado de TextShimmer) */
+.lp-brillo {
+  --lp-brillo-base: rgba(236, 232, 255, .82);
+  --lp-brillo-ancho: 36px;
+  color: transparent;
+  background-image:
+    linear-gradient(90deg, transparent calc(50% - var(--lp-brillo-ancho)), #fff, transparent calc(50% + var(--lp-brillo-ancho))),
+    linear-gradient(var(--lp-brillo-base), var(--lp-brillo-base));
+  background-size: 250% 100%, auto;
+  background-repeat: no-repeat, padding-box;
+  -webkit-background-clip: text; background-clip: text;
+  animation: lp-brillo 3.4s linear infinite;
+}
+@keyframes lp-brillo {
+  from { background-position: 100% center, 0 0; }
+  to   { background-position: 0% center, 0 0; }
+}
+
+/* ---------- 5. Barra de navegación ---------- */
+.lp-barra {
+  position: fixed; inset: 0 0 auto; z-index: 50;
+  padding: 16px 24px; pointer-events: none;   /* solo sus hijos reciben clics */
+}
+.lp-barra-in {
+  max-width: 1280px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+}
+.lp-barra-in > *, .lp-menu { pointer-events: auto; }
+
+.lp-marca {
+  justify-self: start; display: inline-flex; align-items: center; gap: 10px;
+  color: #fff; text-decoration: none; font-family: var(--lp-serif); font-size: 1.6rem;
+  line-height: 1; letter-spacing: -.01em; border-radius: 8px;
+}
+.lp-marca-icono { width: 28px; height: 28px; flex: none; filter: drop-shadow(0 0 10px rgba(185, 168, 255, .45)); }
+
+/* Píldora de vidrio con los enlaces */
+.lp-nav, .lp-acciones {
+  display: flex; align-items: center; border-radius: 12px;
+  background: var(--lp-vidrio); border: 1px solid var(--lp-border-suave);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+  transition: background-color .5s var(--lp-curva), box-shadow .5s;
+}
+.lp-nav { position: relative; gap: 2px; padding: 5px; }
+.lp-nav a {
+  position: relative; z-index: 1; padding: 8px 14px; border-radius: 8px;
+  font-size: .875rem; font-weight: 500; color: rgba(236, 232, 255, .82);
+  text-decoration: none; transition: color .3s;
+}
+.lp-nav a:hover, .lp-nav a[aria-current="true"] { color: #fff; }
+/* Fondo que se desliza entre los enlaces (adaptado de AnimatedBackground) */
+.lp-nav-resalte {
+  position: absolute; z-index: 0; top: 5px; bottom: 5px; left: 0; width: 0;
+  border-radius: 8px; background: rgba(255, 255, 255, .1); opacity: 0;
+  transition: transform .5s var(--lp-curva), width .5s var(--lp-curva), opacity .3s;
+}
+.lp-acciones { justify-self: end; gap: 4px; padding: 4px; }
+/* Al pasar ~40 px de scroll, las píldoras se vuelven más opacas */
+.lp-barra.is-scrolled .lp-nav,
+.lp-barra.is-scrolled .lp-acciones,
+.lp-barra.is-scrolled .lp-menu-btn {
+  background: var(--lp-vidrio-fuerte); box-shadow: 0 10px 30px -12px rgba(0, 0, 0, .6);
+}
+
+/* Botón de hamburguesa (solo móvil) */
+.lp-menu-btn {
+  position: relative; display: none; justify-self: end;
+  width: 44px; height: 44px; padding: 0; border-radius: 12px; cursor: pointer; color: #fff;
+  background: var(--lp-vidrio); border: 1px solid var(--lp-border-suave);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+}
+.lp-menu-btn span {
+  position: absolute; left: 13px; right: 13px; top: 50%; height: 1.5px; margin-top: -.75px;
+  border-radius: 2px; background: currentColor; transition: transform .4s var(--lp-curva);
+}
+.lp-menu-btn span:nth-child(1) { transform: translateY(-4px); }
+.lp-menu-btn span:nth-child(2) { transform: translateY(4px); }
+.lp-menu-btn[aria-expanded="true"] span:nth-child(1) { transform: rotate(45deg); }
+.lp-menu-btn[aria-expanded="true"] span:nth-child(2) { transform: rotate(-45deg); }
+
+.lp-menu {
+  width: min(100%, 1280px); margin: 10px auto 0; padding: 8px; border-radius: 16px;
+  background: rgba(22, 19, 30, .94); border: 1px solid var(--lp-border-suave);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, .7);
+  animation: lp-menu .45s var(--lp-curva);
+}
+.lp-menu nav { display: grid; }
+.lp-menu nav a {
+  padding: 13px 14px; border-radius: 10px; font-size: 1rem; font-weight: 500;
+  color: #fff; text-decoration: none;
+}
+.lp-menu nav a:hover { background: rgba(255, 255, 255, .06); }
+.lp-menu-acciones {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-top: 6px; padding: 10px 4px 4px; border-top: 1px solid rgba(255, 255, 255, .07);
+}
+@keyframes lp-menu { from { opacity: 0; transform: translateY(-8px) scale(.98); filter: blur(6px); } }
+
+/* ---------- 6. Escena: fondo + esfera ---------- */
+/* .lp-escenario mide una pantalla y se queda pegado arriba (sticky) mientras
+   el héroe y "Así funciona" pasan por encima. JS le da dos variables:
+     --p  avance del héroe (0 → 1): desenfoca el texto y oscurece el fondo
+     --q  avance de la esfera (0 → 1): la esfera sube y el fondo matemático se va */
+.lp-escena { position: relative; }
+.lp-escenario {
+  position: sticky; top: 0; z-index: 0;
+  height: var(--lp-alto); pointer-events: none;
+  /* Recorta solo a los lados (la esfera es más ancha que un celular). Hacia abajo
+     la deja asomar: así, cuando la escena termina, la esfera se desvanece sin un corte recto. */
+  overflow: hidden;
+  overflow-x: clip; overflow-y: visible;
+}
+.lp-fondo { position: absolute; inset: 0; opacity: calc(1 - var(--q, 0)); }
+.lp-escenario.is-fondo-oculto .lp-fondo { visibility: hidden; }   /* ya no se ve: ahorra trabajo */
+.lp-fondo > * { position: absolute; inset: 0; }
+/* El fondo se oscurece mientras el héroe se desvanece */
+.lp-fondo::after {
+  content: ""; position: absolute; inset: 0; background: var(--lp-bg);
+  opacity: calc(var(--p, 0) * .55);
+}
+
+/* Capa 1: degradado base con resplandor violeta abajo */
+.lp-fondo-base {
+  background:
+    radial-gradient(55% 40% at 50% 20%, rgba(155, 130, 255, .2), transparent 70%),
+    radial-gradient(95% 55% at 50% 110%, rgba(124, 82, 216, 1) 0%, rgba(124, 82, 216, .55) 38%, transparent 74%),
+    linear-gradient(180deg, #1d1828 0%, #241e33 46%, #392b63 80%, #6447c4 100%);
+}
+
+/* Capa 2: papel milimetrado con máscara radial (se desvanece hacia los bordes) */
+.lp-fondo-cuadricula {
+  inset: -80px 0 0;
+  background-image:
+    linear-gradient(rgba(236, 232, 255, .075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(236, 232, 255, .075) 1px, transparent 1px),
+    linear-gradient(rgba(236, 232, 255, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(236, 232, 255, .035) 1px, transparent 1px);
+  background-size: 160px 160px, 160px 160px, 32px 32px, 32px 32px;
+  background-position: center top;
+  -webkit-mask-image: radial-gradient(ellipse 68% 62% at 50% 42%, #000 15%, transparent 78%);
+  mask-image: radial-gradient(ellipse 68% 62% at 50% 42%, #000 15%, transparent 78%);
+  transform: translate3d(0, calc(var(--p, 0) * -60px), 0);
+}
+
+/* Eje vertical tenue: el "haz de luz" detrás del titular (como el cohete del video) */
+.lp-fondo-eje {
+  left: 50%; right: auto; width: 1px; margin-left: -.5px;
+  background: linear-gradient(to bottom, transparent 4%, rgba(214, 204, 255, .4) 22%, rgba(214, 204, 255, .12) 46%, transparent 62%);
+}
+
+/* Capa 4: la curva. Tres trazos encimados (halo, brillo y núcleo) simulan el resplandor
+   sin usar filtros, que costarían más al animar. Se dibuja sola con stroke-dashoffset. */
+.lp-fondo-curva { width: 100%; height: 100%; transform: translate3d(0, calc(var(--p, 0) * -90px), 0); }
+.lp-curva { stroke-dasharray: 1; stroke-dashoffset: 1; animation: lp-dibujar 2.8s var(--lp-curva) .35s forwards; }
+.lp-curva--halo { stroke-width: 16; opacity: .07; }
+.lp-curva--brillo { stroke-width: 5; opacity: .2; }
+.lp-curva--nucleo { stroke-width: 1.6; opacity: .9; }
+@keyframes lp-dibujar { to { stroke-dashoffset: 0; } }
+
+/* Capa 3: canvas con los símbolos flotantes y el punto luminoso */
+.lp-fondo-lienzo { width: 100%; height: 100%; }
+
+/* Capa 6: velo oscuro detrás del texto para que siempre se lea */
+.lp-fondo-velo {
+  background: radial-gradient(ellipse 48% 34% at 50% 66%, rgba(18, 15, 26, .7) 0%, rgba(18, 15, 26, .32) 58%, transparent 100%);
+}
+
+/* Modo B: fondo solo de color (clase lp-fondo-color en <body>) */
+.lp-fondo-orbe { display: none; }
+.lp-fondo-color .lp-fondo-cuadricula,
+.lp-fondo-color .lp-fondo-eje,
+.lp-fondo-color .lp-fondo-curva,
+.lp-fondo-color .lp-fondo-lienzo { display: none; }
+.lp-fondo-color .lp-fondo-orbe {
+  display: block; inset: auto; left: 50%; top: 58%; width: 90vmax; aspect-ratio: 1;
+  border-radius: 50%; translate: -50% -50%;
+  background: radial-gradient(closest-side, rgba(124, 92, 255, .5), rgba(124, 92, 255, .16) 55%, transparent);
+  animation: lp-orbe 22s ease-in-out infinite alternate;
+}
+@keyframes lp-orbe {
+  0%   { transform: translate(-6%, 3%) scale(1); }
+  50%  { transform: translate(5%, -4%) scale(1.08); }
+  100% { transform: translate(-3%, -2%) scale(.95); }
+}
+
+/* La esfera: dos capas (apagada y encendida). Al subir, la encendida aparece. */
+/* --r (0 → 1) crece cuando la escena termina: la esfera se desvanece al irse */
+.lp-esfera {
+  position: absolute; left: 50%; top: 10vh;
+  width: clamp(620px, 94vw, 1280px); aspect-ratio: 1;
+  transform-origin: 50% 0;
+  transform: translate3d(-50%, calc((1 - var(--q, 0)) * 48%), 0) scale(calc(.9 + var(--q, 0) * .1));
+  opacity: calc(clamp(0, var(--q, 0) * 2.5, 1) * (1 - var(--r, 0)));
+  will-change: transform, opacity;
+}
+.lp-esfera > * { position: absolute; inset: 0; border-radius: 50%; }
+.lp-esfera-cuerpo {
+  background: radial-gradient(120% 90% at 50% 0%, #3b3163 0%, #2c2543 44%, rgba(34, 30, 39, 0) 78%);
+  box-shadow: inset 0 1px 0 rgba(185, 168, 255, .4);
+}
+.lp-esfera-luz {
+  opacity: var(--q, 0);
+  background: radial-gradient(135% 92% at 50% 0%, #a585ff 0%, #8668fb 16%, #7259ee 33%, #5a46c0 51%, rgba(52, 42, 92, .55) 67%, rgba(34, 30, 39, 0) 82%);
+  box-shadow: 0 -10px 120px -10px rgba(140, 110, 255, .55),
+              inset 0 2px 0 rgba(225, 215, 255, .5),
+              inset 0 50px 90px -40px rgba(215, 200, 255, .55);
+}
+
+/* Grano fino sobre el fondo (SVG feTurbulence dentro del CSS) */
+.lp-grano {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .09;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* ---------- 7. Héroe ---------- */
+/* El héroe mide una pantalla y media: su contenido se queda quieto (sticky)
+   durante la media pantalla extra, mientras se desenfoca y se desvanece. */
+.lp-heroe {
+  position: relative; z-index: 2;
+  margin-top: calc(var(--lp-alto) * -1);    /* se monta encima del escenario */
+  height: calc(100vh + 50vh);
+}
+.lp-heroe-pin {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  padding: 112px 20px clamp(56px, 11vh, 120px);
+}
+@supports (height: 100svh) {
+  .lp-heroe { height: calc(100svh + 50vh); }
+  .lp-heroe-pin { height: 100svh; }
+}
+.lp-heroe-contenido {
+  width: 100%; max-width: 980px; text-align: center; transform-origin: 50% 60%;
+  opacity: calc(1 - var(--p, 0) * 1.15);
+  filter: blur(calc(var(--p, 0) * 14px));
+  transform: translate3d(0, calc(var(--p, 0) * -40px), 0) scale(calc(1 - var(--p, 0) * .02));
+  will-change: transform, opacity, filter;
+}
+.lp-titulo {
+  margin: 22px 0; font-family: var(--lp-serif); font-weight: 360;
+  font-size: clamp(2.6rem, 5.3vw, 4.75rem); line-height: .98; letter-spacing: -.03em;
+  color: #fff; text-wrap: balance;
+}
+.lp-linea { display: block; }
+.lp-heroe-sub {
+  max-width: 35rem; margin: 0 auto; font-size: clamp(1rem, 1.2vw, 1.125rem); line-height: 1.55;
+  color: var(--lp-text-dim); text-wrap: pretty;
+}
+
+/* Titulares que aparecen palabra por palabra (adaptado de TextEffect, preset "fade-in-blur") */
+.lp-js [data-lp-palabras].is-partido .lp-palabra {
+  display: inline-block; opacity: 0; filter: blur(12px); transform: translate3d(0, .3em, 0);
+}
+.lp-js [data-lp-palabras].is-visible .lp-palabra {
+  animation: lp-palabra .7s var(--lp-curva) forwards;
+  animation-delay: calc(var(--i, 0) * 80ms + 120ms);
+}
+@keyframes lp-palabra { to { opacity: 1; filter: blur(0); transform: none; } }
+
+/* ---------- 8. "Así funciona" y maqueta ---------- */
+.lp-asi {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 20vh 20px 15vh;
+}
+.lp-titulo-2 {
+  margin: 20px 0 clamp(36px, 5vw, 56px); font-family: var(--lp-serif); font-weight: 380;
+  font-size: clamp(1.95rem, 3.1vw, 2.75rem); line-height: 1.02; letter-spacing: -.025em;
+  color: #fff; text-wrap: balance; text-shadow: 0 2px 30px rgba(40, 20, 90, .35);
+}
+
+.lp-maqueta { width: min(1040px, 100%); --m: 1; }
+/* --m (0 → 1) lo da JS según la posición: la ventana sube y se acomoda */
+.lp-maqueta-in {
+  transform-origin: 50% 0;
+  transform: translate3d(0, calc((1 - var(--m)) * 110px), 0) scale(calc(.92 + var(--m) * .08));
+  opacity: calc(.3 + var(--m) * .7);
+  will-change: transform, opacity;
+}
+.lp-maqueta-nota { margin-top: 18px; font-size: .8rem; color: var(--lp-texto-tenue); }
+
+/* Ventana de navegador */
+.lp-ventana {
+  position: relative; overflow: hidden; border-radius: 14px; text-align: left;
+  background: linear-gradient(180deg, rgba(42, 35, 66, .92), rgba(29, 25, 42, .95));
+  border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 50px 120px -40px rgba(8, 4, 24, .95), 0 0 0 1px rgba(0, 0, 0, .3);
+}
+.lp-ventana-barra {
+  display: grid; grid-template-columns: 1fr minmax(0, 2.2fr) 1fr; align-items: center; gap: 12px;
+  height: 40px; padding: 0 14px; background: #141218; border-bottom: 1px solid rgba(255, 255, 255, .06);
+  color: rgba(255, 255, 255, .45); font-size: 14px;
+}
+.lp-ventana-izq, .lp-ventana-der, .lp-ventana-iconos { display: flex; align-items: center; gap: 14px; }
+.lp-ventana-der { justify-content: flex-end; }
+.lp-semaforo { display: flex; gap: 7px; }
+.lp-semaforo i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+.lp-semaforo i:nth-child(2) { background: #febc2e; }
+.lp-semaforo i:nth-child(3) { background: #28c840; }
+.lp-url {
+  display: flex; align-items: center; justify-content: center; gap: 7px; height: 26px; padding: 0 10px;
+  border-radius: 7px; background: rgba(255, 255, 255, .06); font-size: .75rem; color: rgba(255, 255, 255, .72);
+}
+.lp-url .icono { font-size: 12px; }
+.lp-url .icono:last-child { margin-left: auto; opacity: .6; }
+.lp-url span { margin-left: auto; }
+
+.lp-app-barra {
+  display: flex; align-items: center; gap: 24px; height: 44px; padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .06); font-size: .78rem; color: rgba(236, 232, 255, .55);
+}
+.lp-app-marca { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-family: var(--lp-serif); font-size: 1rem; }
+.lp-app-marca .lp-marca-icono { width: 16px; height: 16px; filter: none; }
+.lp-app-nav { display: flex; gap: 18px; align-self: stretch; }
+.lp-app-nav > span { display: flex; align-items: center; gap: 6px; border-bottom: 1.5px solid transparent; }
+.lp-app-nav .is-activo { color: #fff; border-color: rgba(255, 255, 255, .85); }
+.lp-app-usuario { margin-left: auto; display: flex; align-items: center; gap: 8px; color: rgba(236, 232, 255, .8); }
+.lp-avatar {
+  display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(145deg, #cfc4ff, var(--lp-violet-500)); color: #17131f; font-size: .68rem; font-weight: 700;
+}
+
+/* Pestañas grandes: la activa en blanco, las otras apagadas (como en el video) */
+.lp-tabs { display: flex; flex-wrap: wrap; gap: 8px clamp(16px, 3.4vw, 44px); padding: 22px 24px 18px; }
+.lp-tab {
+  position: relative; margin: 0; padding: 2px 0 12px; border: 0; background: none; cursor: pointer;
+  font: 400 clamp(1.35rem, 2.7vw, 2.35rem)/1.1 var(--lp-sans); letter-spacing: -.025em;
+  color: rgba(236, 232, 255, .34); transition: color .5s var(--lp-curva);
+}
+.lp-tab:hover { color: rgba(236, 232, 255, .62); }
+.lp-tab[aria-selected="true"] { color: #fff; }
+.lp-tab:focus-visible { outline-offset: 6px; border-radius: 6px; }
+/* Barra de progreso: es una animación CSS; al terminar, JS pasa a la siguiente pestaña */
+.lp-tab-progreso {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 2px; overflow: hidden; border-radius: 2px;
+  background: rgba(255, 255, 255, .12); opacity: 0; transition: opacity .4s;
+}
+.lp-tab[aria-selected="true"] .lp-tab-progreso { opacity: 1; }
+.lp-tab-progreso::after {
+  content: ""; position: absolute; inset: 0; transform-origin: left; transform: scaleX(1);
+  background: linear-gradient(90deg, var(--lp-violet-400), var(--lp-lavender));
+}
+.lp-maqueta.is-rotando .lp-tab[aria-selected="true"] .lp-tab-progreso::after {
+  animation: lp-progreso var(--lp-rotacion) linear forwards;
+}
+.lp-maqueta.is-pausado .lp-tab-progreso::after,
+.lp-maqueta.is-fuera .lp-tab-progreso::after { animation-play-state: paused; }
+@keyframes lp-progreso { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Paneles encimados en la misma celda: el que sale se desenfoca y el que entra
+   se enfoca (adaptado de TransitionPanel). La altura es la del panel más alto. */
+.lp-paneles { display: grid; }
+.lp-panel {
+  grid-area: 1 / 1; padding: 0 20px 20px;
+  opacity: 0; visibility: hidden; filter: blur(6px); transform: translate3d(0, 14px, 0) scale(.99);
+  transition: opacity .45s var(--lp-curva), filter .45s var(--lp-curva), transform .6s var(--lp-curva), visibility 0s linear .6s;
+}
+.lp-panel.is-activo {
+  opacity: 1; visibility: visible; filter: none; transform: none;
+  transition-delay: .08s, .08s, .08s, 0s;
+}
+.lp-panel:focus-visible { outline-offset: -2px; border-radius: 12px; }
+.lp-panel-rejilla { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 14px; }
+.lp-columna { display: grid; gap: 14px; align-content: start; }
+
+/* Tarjetas de vidrio oscuro dentro de la maqueta */
+.lp-carta {
+  position: relative; padding: 16px 18px 18px; border-radius: var(--lp-radio);
+  background: rgba(255, 255, 255, .045); border: 1px solid var(--lp-border-suave);
+}
+.lp-carta-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.lp-carta-titulo { font-size: .875rem; font-weight: 500; color: #fff; }
+.lp-carta > .lp-carta-titulo { margin-bottom: 10px; }
+.lp-texto-chico { font-size: .8rem; line-height: 1.5; color: var(--lp-text-dim); }
+.lp-etiqueta { margin: 14px 0 6px; font-size: .78rem; color: var(--lp-text-dim); }
+.lp-etiqueta-mayus { font-size: .66rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--lp-texto-tenue); }
+.lp-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+  font-size: .7rem; line-height: 1.5; white-space: nowrap; color: rgba(236, 232, 255, .78);
+  background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .08);
+}
+.lp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.lp-chips li {
+  padding: 5px 11px; border-radius: 999px; font-size: .75rem; color: #fff;
+  background: rgba(124, 92, 255, .16); border: 1px solid rgba(185, 168, 255, .25);
+}
+
+/* Pestaña "Escribir": herramientas, pizarrón y trazo a mano */
+.lp-chip--estado .lp-estado-b { display: none; }
+.is-listo .lp-chip--estado .lp-estado-a { display: none; }
+.is-listo .lp-chip--estado .lp-estado-b { display: inline; }
+.lp-punto--vivo { width: 6px; height: 6px; background: var(--lp-violet-300); box-shadow: 0 0 8px rgba(185, 168, 255, .9); animation: lp-latido-punto 1.2s ease-in-out infinite; }
+.is-listo .lp-punto--vivo { background: var(--lp-ok); box-shadow: 0 0 8px rgba(74, 222, 128, .8); animation: none; }
+@keyframes lp-latido-punto { 50% { opacity: .35; } }
+
+.lp-herramientas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.lp-herr {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px;
+  font-size: .72rem; color: rgba(236, 232, 255, .72);
+  background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08);
+}
+.lp-herr .icono { font-size: 13px; }
+.lp-herr.is-activo { color: #fff; background: rgba(124, 92, 255, .22); border-color: rgba(185, 168, 255, .45); }
+
+.lp-pizarra {
+  position: relative; overflow: hidden; border-radius: 12px;
+  background: rgba(8, 6, 14, .42); border: 1px solid rgba(255, 255, 255, .07);
+}
+/* Líneas guía en 5 franjas, igual que el pizarrón real */
+.lp-pizarra::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(to bottom, transparent calc(100% - 1px), rgba(185, 168, 255, .12) calc(100% - 1px));
+  background-size: 100% 20%;
+}
+.lp-trazo { position: relative; display: block; width: 100%; height: auto; aspect-ratio: 520 / 160; }
+.lp-trazo path {
+  fill: none; stroke: var(--lp-lavender); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.lp-pizarra .lp-trazo { filter: drop-shadow(0 0 6px rgba(155, 130, 255, .5)); }
+.lp-lapiz { opacity: 0; transition: opacity .25s; pointer-events: none; }
+.lp-trazo--mini { border-radius: 10px; background: rgba(8, 6, 14, .42); border: 1px solid rgba(255, 255, 255, .07); }
+.lp-trazo--mini path { stroke-width: 5.5; stroke: rgba(236, 232, 255, .85); }
+
+.lp-pizarra-pie, .lp-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.lp-falso {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 9px;
+  font-size: .75rem; font-weight: 500; color: rgba(236, 232, 255, .82);
+  background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .09);
+}
+.lp-falso .icono { font-size: 13px; }
+.lp-falso--claro { position: relative; color: #17131f; background: var(--lp-lavender); border-color: transparent; }
+/* Cuando termina la animación, el botón principal "late" para invitar al siguiente paso.
+   Es un anillo que crece y se desvanece (solo transform y opacity: no repinta la página). */
+.lp-falso--claro::after {
+  content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+  border: 2px solid rgba(185, 168, 255, .75); opacity: 0;
+}
+.is-listo .lp-falso--claro::after { animation: lp-latido 1.6s var(--lp-curva) infinite; }
+@keyframes lp-latido {
+  0% { opacity: .9; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(1.15, 1.4); }
+}
+
+/* Pestaña "Confirmar" */
+.lp-aviso {
+  display: flex; align-items: flex-start; gap: 9px; padding: 9px 12px; border-radius: 10px;
+  font-size: .78rem; line-height: 1.45; color: #fcd581;
+  background: rgba(251, 191, 36, .08); border: 1px solid rgba(251, 191, 36, .25);
+}
+.lp-aviso .icono { margin-top: 2px; font-size: 14px; color: var(--lp-aviso); }
+.lp-aviso strong { font-weight: 600; }
+.lp-campo {
+  display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 10px;
+  font: 1rem var(--lp-mono); color: #fff; letter-spacing: .02em;
+  background: rgba(8, 6, 14, .45); border: 1px solid rgba(185, 168, 255, .4);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, .16);
+}
+.lp-cursor {
+  display: inline-block; width: 1.5px; height: 1.15em; margin-left: 2px; vertical-align: middle;
+  background: var(--lp-violet-300); animation: lp-parpadeo 1s steps(1) infinite;
+}
+@keyframes lp-parpadeo { 50% { opacity: 0; } }
+.lp-vista {
+  display: grid; place-items: center; min-height: 72px; margin-top: 10px; padding: 8px 12px;
+  border-radius: 10px; font-size: 1.55rem; color: #fff;
+  background: rgba(255, 255, 255, .03); border: 1px solid rgba(255, 255, 255, .06);
+}
+.lp-fila-texto { margin-left: 6px; font-size: .75rem; color: var(--lp-text-dim); }
+.lp-nivel {
+  display: inline-flex; gap: 3px; padding: 3px; border-radius: 999px; font-size: .72rem;
+  background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08);
+}
+.lp-nivel span { padding: 3px 10px; border-radius: 999px; color: rgba(236, 232, 255, .65); }
+.lp-nivel .is-activo { background: rgba(124, 92, 255, .32); color: #fff; }
+
+/* Pestaña "Resolver" */
+.lp-sol { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.lp-sol li {
+  display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 4px 12px; align-items: center;
+  padding: 12px 14px; border-radius: 12px;
+  background: rgba(255, 255, 255, .03); border: 1px solid rgba(255, 255, 255, .06);
+}
+.lp-sol-num {
+  grid-row: span 2; align-self: start; display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 50%; font-size: .75rem; font-weight: 600; color: #ebe5ff; background: rgba(124, 92, 255, .28);
+}
+.lp-sol strong { font-size: .82rem; font-weight: 500; color: #fff; }
+.lp-sol .lp-formula { font-size: 1.08rem; color: rgba(236, 232, 255, .92); overflow-x: auto; }
+.lp-sello {
+  display: flex; align-items: center; gap: 9px; margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+  font-size: .82rem; font-weight: 500; color: #86efac;
+  background: rgba(74, 222, 128, .1); border: 1px solid rgba(74, 222, 128, .3);
+}
+.lp-sello .icono { font-size: 17px; color: var(--lp-ok); }
+.lp-sello .lp-formula { font-size: 1rem; }
+.lp-resultado { margin: 8px 0 6px; font-size: 2.6rem; line-height: 1.1; color: #fff; }
+.lp-ejercicio { margin-top: 6px; font-size: 1.25rem; color: #fff; }
+
+/* Animaciones dentro del panel al activarse (JS pone .is-animando cada vez) */
+@keyframes lp-entra { from { opacity: 0; transform: translate3d(0, 10px, 0); filter: blur(4px); } }
+.lp-panel.is-animando .lp-columna > .lp-carta { animation: lp-entra .6s var(--lp-curva) both; }
+.lp-panel.is-animando .lp-columna > .lp-carta:nth-child(1) { animation-delay: .12s; }
+.lp-panel.is-animando .lp-columna > .lp-carta:nth-child(2) { animation-delay: .24s; }
+.lp-panel.is-animando .lp-aviso { animation: lp-entra .6s var(--lp-curva) both .2s; }
+.lp-panel.is-animando .lp-vista .lp-formula { animation: lp-entra .6s var(--lp-curva) both 1.15s; }
+.lp-panel.is-animando .lp-sol li { animation: lp-entra .6s var(--lp-curva) both; animation-delay: calc(.2s + var(--i, 0) * .24s); }
+.lp-panel.is-animando .lp-sello { animation: lp-sello .7s var(--lp-curva) both .8s; }
+@keyframes lp-sello {
+  0%   { opacity: 0; transform: scale(.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+  60%  { opacity: 1; transform: scale(1.01); box-shadow: 0 0 0 6px rgba(74, 222, 128, .14); }
+  100% { opacity: 1; transform: none; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+/* ---------- 9. Secciones ---------- */
+.lp-seccion { position: relative; z-index: 2; padding: clamp(72px, 10vw, 128px) 0; }
+.lp-cabecera { display: flex; flex-direction: column; align-items: center; max-width: 780px; margin: 0 auto; text-align: center; }
+.lp-titulo-3 {
+  margin-top: 18px; font-family: var(--lp-serif); font-weight: 370;
+  font-size: clamp(2rem, 3.6vw, 3rem); line-height: 1.04; letter-spacing: -.025em;
+  color: #fff; text-wrap: balance;
+}
+.lp-lead { max-width: 36rem; margin-top: 18px; font-size: 1.0625rem; color: var(--lp-text-dim); text-wrap: balance; }
+
+/* Cómo funciona: 3 pasos en fila */
+.lp-pasos-lista {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
+  margin: clamp(44px, 6vw, 64px) 0 0; padding: 0; list-style: none;
+}
+.lp-paso {
+  position: relative; overflow: hidden; padding: 24px 24px 28px; border-radius: var(--lp-radio-g);
+  background: linear-gradient(180deg, var(--lp-surface), rgba(255, 255, 255, .02));
+  border: 1px solid var(--lp-border-suave);
+}
+.lp-paso::before {   /* línea de luz en el borde superior */
+  content: ""; position: absolute; inset: 0 0 auto; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(185, 168, 255, .6), transparent);
+}
+.lp-paso-cabeza { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 44px; }
+.lp-paso-icono {
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; font-size: 20px;
+  color: var(--lp-violet-300); background: rgba(124, 92, 255, .14); border: 1px solid rgba(185, 168, 255, .22);
+}
+.lp-paso-num { font-family: var(--lp-serif); font-weight: 300; font-size: 3rem; line-height: .8; letter-spacing: -.03em; color: rgba(236, 232, 255, .2); }
+.lp-paso h3 { margin-bottom: 8px; font-size: 1.2rem; font-weight: 550; letter-spacing: -.01em; color: #fff; }
+.lp-paso p { font-size: .975rem; color: var(--lp-text-dim); }
+
+/* Características: 4 tarjetas de vidrio */
+.lp-rejilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: clamp(44px, 6vw, 64px); }
+.lp-carac {
+  position: relative; overflow: hidden; padding: 22px 24px 26px; border-radius: var(--lp-radio-g);
+  background: var(--lp-surface); border: 1px solid var(--lp-border-suave);
+}
+/* Foco de luz que sigue al mouse (adaptado de Spotlight). JS da --mx y --my. */
+.lp-carac::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgba(185, 168, 255, .15), transparent 70%);
+  opacity: 0; transition: opacity .35s;
+}
+.lp-carac:hover::before { opacity: 1; }
+.lp-carac h3 { margin-bottom: 8px; font-size: 1.15rem; font-weight: 550; letter-spacing: -.01em; color: #fff; }
+.lp-carac p { font-size: .95rem; color: var(--lp-text-dim); }
+.lp-carac-visual {
+  position: relative; display: grid; place-items: center; height: 156px; margin-bottom: 22px; overflow: hidden;
+  border-radius: 14px; background: rgba(10, 8, 16, .32); border: 1px solid rgba(255, 255, 255, .06);
+  background-image: radial-gradient(rgba(236, 232, 255, .07) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.lp-mini { width: min(320px, 86%); margin: 0; padding: 0; list-style: none; }
+.lp-mini-etiqueta { margin-bottom: 6px; font-size: .72rem; color: var(--lp-text-dim); }
+.lp-mini-campo {
+  display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px;
+  font: .95rem var(--lp-mono); color: #fff; background: rgba(8, 6, 14, .55); border: 1px solid rgba(185, 168, 255, .35);
+}
+.lp-mini-marca { padding: 0 2px; border-radius: 4px; background: rgba(251, 191, 36, .22); color: #fde68a; }
+.lp-mini-acciones { display: flex; gap: 6px; margin-top: 10px; }
+.lp-mini-acciones .icono { font-size: 12px; }
+.lp-mini-verif { display: grid; gap: 8px; }
+.lp-mini-fila {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px;
+  background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08); color: #fff;
+}
+.lp-mini-fila .lp-formula { font-size: 1.05rem; }
+.lp-mini-fila .icono { margin-left: auto; font-size: 16px; color: var(--lp-ok); }
+.lp-mini-fila--ok { background: rgba(74, 222, 128, .08); border-color: rgba(74, 222, 128, .28); }
+.lp-mini-tag {
+  min-width: 38px; padding: 2px 7px; border-radius: 6px; text-align: center;
+  font-size: .66rem; font-weight: 600; letter-spacing: .06em; color: #e7e1ff; background: rgba(124, 92, 255, .28);
+}
+.lp-mini-fila--ok .lp-mini-tag { color: #bbf7d0; background: rgba(74, 222, 128, .2); }
+/* Selector Básica / Avanzada: la pista se desliza al pasar el mouse por la tarjeta */
+.lp-mini-nivel {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 999px;
+  font-size: .8rem; text-align: center; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .09);
+}
+.lp-mini-nivel span:not(.lp-mini-nivel-pista) { position: relative; z-index: 1; padding: 6px 0; color: rgba(236, 232, 255, .7); transition: color .4s; }
+.lp-mini-nivel-pista {
+  position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px;
+  background: rgba(124, 92, 255, .4); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15);
+  transition: transform .55s var(--lp-curva);
+}
+.lp-mini-nivel span:nth-child(2) { color: #fff; }
+.lp-carac:hover .lp-mini-nivel-pista { transform: translateX(100%); }
+.lp-carac:hover .lp-mini-nivel span:nth-child(2) { color: rgba(236, 232, 255, .7); }
+.lp-carac:hover .lp-mini-nivel span:nth-child(3) { color: #fff; }
+.lp-mini-formula { margin-top: 14px; text-align: center; font-size: 1.2rem; color: #fff; }
+.lp-mini-historial { display: grid; gap: 6px; }
+.lp-mini-historial li {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 12px; border-radius: 10px;
+  font-size: .78rem; color: #fff; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .07);
+}
+.lp-mini-historial .lp-formula { font-size: .98rem; }
+.lp-mini-ok { display: inline-flex; align-items: center; gap: 6px; font-size: .7rem; color: #86efac; }
+.lp-mini-ok::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--lp-ok); }
+.lp-mini-historial .lp-mini-nuevo { color: var(--lp-text-dim); border-style: dashed; border-color: rgba(185, 168, 255, .35); }
+.lp-mini-nuevo .lp-formula { color: #fff; }
+
+/* Cierre (CTA) */
+.lp-cta .lp-contenedor { max-width: 1040px; }
+.lp-cta-tarjeta {
+  position: relative; isolation: isolate; overflow: hidden; text-align: center;
+  padding: clamp(64px, 9vw, 104px) clamp(20px, 5vw, 56px) 34px; border-radius: 28px;
+  background: rgba(255, 255, 255, .03); border: 1px solid var(--lp-border-suave);
+}
+/* Un "amanecer": la misma esfera violeta asomándose por abajo */
+.lp-cta-amanecer {
+  /* Su borde superior queda siempre 112 px arriba del final de la tarjeta (detrás de la cinta) */
+  position: absolute; z-index: -1; left: 50%; bottom: 0; width: max(1100px, 140%); aspect-ratio: 1;
+  transform: translate(-50%, calc(100% - 112px)); border-radius: 50%; opacity: .9;
+  background: radial-gradient(135% 92% at 50% 0%, #8c6dff 0%, #6f57e8 14%, #4c3c9e 32%, rgba(40, 32, 70, 0) 58%);
+  box-shadow: 0 -20px 120px -20px rgba(140, 110, 255, .6), inset 0 1px 0 rgba(225, 215, 255, .6);
+}
+.lp-cta .lp-titulo-2 { margin: 0 0 28px; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1; }
+.lp-cta-botones { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.lp-cta-nota { margin-top: 16px; font-size: .85rem; color: var(--lp-texto-tenue); }
+.lp-alcance { margin-top: 18px; font-size: .9rem; color: var(--lp-text-dim); }
+/* Botón imán (adaptado de Magnetic): la zona es un poco más grande que el botón */
+.lp-iman { display: inline-block; padding: 10px; margin: -10px; }
+
+/* Luz que recorre el borde de la tarjeta (adaptado de BorderTrail).
+   Solo si el navegador entiende offset-path: rect(); si no, simplemente no aparece. */
+.lp-borde-luz { display: none; }
+@supports (offset-path: rect(0 auto auto 0 round 1px)) {
+  .lp-borde-luz {
+    display: block; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    border: 1px solid transparent; border-radius: inherit;
+    -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    -webkit-mask-clip: padding-box, border-box;
+    -webkit-mask-composite: xor;
+    mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    mask-clip: padding-box, border-box;
+    mask-composite: exclude;
+  }
+  .lp-borde-luz-punto {
+    position: absolute; width: 150px; aspect-ratio: 1;
+    background: radial-gradient(circle, #fff 0%, rgba(205, 192, 255, .9) 18%, rgba(124, 92, 255, 0) 70%);
+    offset-path: rect(0 auto auto 0 round 28px);
+    animation: lp-recorrido 9s linear infinite;
+  }
+}
+@keyframes lp-recorrido { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+
+/* Cinta infinita de ejemplos (adaptado de InfiniteSlider) */
+.lp-cinta {
+  position: relative; overflow: hidden; margin: 52px auto 0; max-width: 760px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.lp-cinta-pista { display: flex; gap: 12px; width: max-content; animation: lp-cinta 30s linear infinite; }
+.lp-cinta:hover .lp-cinta-pista { animation-play-state: paused; }
+.lp-cinta ul { display: flex; gap: 12px; margin: 0; padding: 4px 0; list-style: none; }
+.lp-cinta li {
+  padding: 8px 16px; border-radius: 999px; font-size: 1.05rem; color: #fff;
+  background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
+  text-shadow: 0 1px 8px rgba(30, 16, 80, .45);
+}
+@keyframes lp-cinta { to { transform: translateX(calc(-50% - 6px)); } }
+/* Desenfoque progresivo en las orillas (adaptado de ProgressiveBlur):
+   4 capas con más desenfoque cada una, recortadas con una máscara en franja. */
+.lp-desenfoque { position: absolute; top: 0; bottom: 0; width: 90px; z-index: 1; pointer-events: none; }
+.lp-desenfoque--izq { left: 0; }
+.lp-desenfoque--der { right: 0; transform: scaleX(-1); }
+.lp-desenfoque i { position: absolute; inset: 0; }
+.lp-desenfoque i:nth-child(1) { -webkit-backdrop-filter: blur(.5px); backdrop-filter: blur(.5px); -webkit-mask-image: linear-gradient(270deg, transparent 0%, #000 20%, #000 40%, transparent 60%); mask-image: linear-gradient(270deg, transparent 0%, #000 20%, #000 40%, transparent 60%); }
+.lp-desenfoque i:nth-child(2) { -webkit-backdrop-filter: blur(1.5px); backdrop-filter: blur(1.5px); -webkit-mask-image: linear-gradient(270deg, transparent 20%, #000 40%, #000 60%, transparent 80%); mask-image: linear-gradient(270deg, transparent 20%, #000 40%, #000 60%, transparent 80%); }
+.lp-desenfoque i:nth-child(3) { -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); -webkit-mask-image: linear-gradient(270deg, transparent 40%, #000 60%, #000 80%, transparent 100%); mask-image: linear-gradient(270deg, transparent 40%, #000 60%, #000 80%, transparent 100%); }
+.lp-desenfoque i:nth-child(4) { -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); -webkit-mask-image: linear-gradient(270deg, transparent 60%, #000 80%); mask-image: linear-gradient(270deg, transparent 60%, #000 80%); }
+
+/* Pie */
+.lp-pie { position: relative; z-index: 2; padding: 40px 0 34px; border-top: 1px solid var(--lp-border-suave); font-size: .9rem; color: var(--lp-text-dim); }
+.lp-pie-in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; }
+.lp-pie-izq { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.lp-marca--chica { font-size: 1.3rem; }
+.lp-marca--chica .lp-marca-icono { width: 22px; height: 22px; }
+.lp-pie-creditos { margin-top: 20px; font-size: .78rem; color: var(--lp-texto-tenue); }
+.lp-pie-creditos a { text-underline-offset: 3px; }
+
+/* Las animaciones infinitas se pausan cuando su zona no está en pantalla (JS pone .is-fuera) */
+.is-fuera, .is-fuera *, .is-fuera *::before, .is-fuera *::after { animation-play-state: paused !important; }
+
+/* ---------- 10. Revelado al hacer scroll (adaptado de InView / AnimatedGroup "blur-slide") ---------- */
+.lp-js [data-lp-revelar] {
+  opacity: 0; filter: blur(4px); transform: translate3d(0, 20px, 0);
+  transition: opacity .7s var(--lp-curva), filter .7s var(--lp-curva), transform .7s var(--lp-curva);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+.lp-js [data-lp-revelar].is-visible { opacity: 1; filter: none; transform: none; }
+
+/* ---------- 11. Responsive ---------- */
+@media (max-width: 1100px) {
+  .lp-panel-rejilla { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  /* La píldora se reemplaza por el menú de hamburguesa */
+  .lp-barra { padding: 14px 16px; }
+  .lp-barra-in { grid-template-columns: 1fr auto; }
+  .lp-nav, .lp-acciones { display: none; }
+  .lp-menu-btn { display: block; }
+
+  .lp-panel-rejilla { grid-template-columns: minmax(0, 1fr); }
+  .lp-columna { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lp-ventana-iconos { display: none; }
+  .lp-ventana-barra { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .lp-pasos-lista { grid-template-columns: minmax(0, 1fr); max-width: 560px; margin-inline: auto; }
+  .lp-paso-cabeza { margin-bottom: 26px; }
+}
+@media (min-width: 901px) {
+  .lp-menu { display: none !important; }   /* si se agranda la ventana con el menú abierto */
+}
+@media (max-width: 700px) {
+  .lp-rejilla { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .lp-contenedor { width: calc(100% - 32px); }
+  .lp-heroe { height: calc(100vh + 30vh); }
+  @supports (height: 100svh) { .lp-heroe { height: calc(100svh + 30vh); } }
+  .lp-heroe-pin { padding: 96px 16px 52px; }
+  .lp-asi { padding: 16vh 16px 12vh; }
+
+  /* La maqueta se simplifica: sin las tarjetas laterales */
+  .lp-extra { display: none; }
+  .lp-app-nav > span:not(.is-activo), .lp-app-usuario { display: none; }
+  .lp-tabs { gap: 6px 18px; padding: 16px 14px 12px; }
+  .lp-panel { padding: 0 12px 12px; }
+  .lp-carta { padding: 14px; }
+  .lp-ventana-barra { padding: 0 10px; gap: 8px; }
+  .lp-url { padding: 0 8px; }
+  .lp-url .icono:last-child { display: none; }
+  .lp-url span { margin-left: 0; }
+  .lp-vista { font-size: 1.3rem; }
+  .lp-sol .lp-formula { font-size: .98rem; }
+  .lp-fila-texto { display: none; }
+
+  .lp-carac { padding: 18px 18px 22px; }
+  .lp-cta-tarjeta { border-radius: 22px; }
+  .lp-pie-in { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- 12. Movimiento reducido ---------- */
+/* Sin parallax, sin desenfoque por scroll, sin rotación ni canvas animado.
+   La esfera y el fondo solo cambian de opacidad al bajar (no se mueven). */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .lp-heroe, .lp-heroe-pin { height: auto; }
+  .lp-heroe-pin { position: relative; min-height: 100vh; }
+  .lp-heroe-contenido, .lp-maqueta-in { opacity: 1; filter: none; transform: none; }
+  .lp-fondo-cuadricula, .lp-fondo-curva { transform: none; }
+  .lp-esfera { transform: translate3d(-50%, 0, 0); }
+  .lp-curva { animation: none; stroke-dashoffset: 0; }
+  .lp-js [data-lp-revelar] { opacity: 1; filter: none; transform: none; transition: none; }
+  .lp-brillo, .lp-borde-luz-punto, .lp-cursor, .lp-punto--vivo, .lp-fondo-orbe,
+  .lp-menu, .is-listo .lp-falso--claro::after { animation: none; }
+  .lp-brillo { color: var(--lp-texto); background: none; }
+  .lp-borde-luz { display: none; }
+  .lp-cinta-pista { animation: none; flex-wrap: wrap; justify-content: center; width: auto; }
+  .lp-cinta ul { flex-wrap: wrap; justify-content: center; }
+  .lp-cinta ul[aria-hidden="true"] { display: none; }
+  .lp-cinta { -webkit-mask-image: none; mask-image: none; }
+  .lp-desenfoque { display: none; }
+  .lp-panel, .lp-tab, .lp-nav-resalte, .lp-btn, .lp-mini-nivel-pista { transition: none; }
+  .lp-panel.is-animando *, .lp-panel.is-animando *::before { animation: none !important; }
+}
